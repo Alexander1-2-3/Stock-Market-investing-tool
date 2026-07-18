@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Beginner-friendly investment calculators for returns, inflation, compounding and market losses." />
+  <title>Investor Calculation Toolkit</title>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --card: #ffffff;
+      --text: #182230;
+      --muted: #667085;
+      --primary: #176b4d;
+      --primary-dark: #0f5138;
+      --accent: #e8f5ef;
+      --border: #d9e1ea;
+      --danger: #b42318;
+      --shadow: 0 10px 30px rgba(16, 24, 40, 0.08);
+      --radius: 18px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
+
+    .hero {
+      background: linear-gradient(135deg, #0f5138, #1f7a59);
+      color: white;
+      padding: 54px 20px 70px;
+    }
+
+    .hero-inner, .container {
+      width: min(1120px, 100%);
+      margin: 0 auto;
+    }
+
+    h1 {
+      margin: 0 0 12px;
+      font-size: clamp(2rem, 5vw, 3.6rem);
+      line-height: 1.05;
+      letter-spacing: -0.04em;
+    }
+
+    .hero p {
+      margin: 0;
+      max-width: 760px;
+      font-size: 1.08rem;
+      color: rgba(255,255,255,.88);
+    }
+
+    .container {
+      padding: 0 20px 50px;
+      margin-top: -34px;
+    }
+
+    .intro-card {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 22px;
+      margin-bottom: 24px;
+      border: 1px solid rgba(255,255,255,.5);
+    }
+
+    .intro-card strong { color: var(--primary-dark); }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 20px;
+    }
+
+    .calculator {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: 0 4px 18px rgba(16, 24, 40, 0.05);
+      overflow: hidden;
+    }
+
+    .calculator-header {
+      padding: 20px 22px 14px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .calculator-header h2 {
+      margin: 0 0 5px;
+      font-size: 1.25rem;
+    }
+
+    .calculator-header p {
+      margin: 0;
+      color: var(--muted);
+      font-size: .94rem;
+    }
+
+    .calculator-body { padding: 20px 22px 22px; }
+
+    .field { margin-bottom: 14px; }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: .9rem;
+      font-weight: 700;
+    }
+
+    .input-wrap {
+      display: flex;
+      align-items: stretch;
+      border: 1px solid var(--border);
+      border-radius: 11px;
+      overflow: hidden;
+      background: white;
+    }
+
+    .input-wrap:focus-within {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(23,107,77,.12);
+    }
+
+    .prefix, .suffix {
+      display: flex;
+      align-items: center;
+      padding: 0 12px;
+      background: #f8fafc;
+      color: var(--muted);
+      font-weight: 700;
+      border-right: 1px solid var(--border);
+    }
+
+    .suffix {
+      border-right: 0;
+      border-left: 1px solid var(--border);
+    }
+
+    input, select {
+      width: 100%;
+      border: 0;
+      outline: 0;
+      padding: 12px 13px;
+      font: inherit;
+      color: var(--text);
+      background: transparent;
+    }
+
+    button {
+      width: 100%;
+      border: 0;
+      border-radius: 11px;
+      padding: 12px 16px;
+      background: var(--primary);
+      color: white;
+      font: inherit;
+      font-weight: 800;
+      cursor: pointer;
+      transition: transform .15s ease, background .15s ease;
+    }
+
+    button:hover { background: var(--primary-dark); }
+    button:active { transform: translateY(1px); }
+
+    .result {
+      display: none;
+      margin-top: 15px;
+      padding: 14px;
+      border-radius: 12px;
+      background: var(--accent);
+      border: 1px solid #b8dfcf;
+    }
+
+    .result.visible { display: block; }
+
+    .result .main {
+      font-size: 1.35rem;
+      font-weight: 900;
+      color: var(--primary-dark);
+      margin-bottom: 4px;
+    }
+
+    .result .detail {
+      color: #344054;
+      font-size: .92rem;
+    }
+
+    .error {
+      display: none;
+      margin-top: 10px;
+      color: var(--danger);
+      font-weight: 700;
+      font-size: .9rem;
+    }
+
+    .error.visible { display: block; }
+
+    .full-width { grid-column: 1 / -1; }
+
+    footer {
+      width: min(1120px, 100%);
+      margin: 0 auto;
+      padding: 0 20px 40px;
+      color: var(--muted);
+      font-size: .86rem;
+    }
+
+    .note {
+      background: #fff7e6;
+      border: 1px solid #f5d28b;
+      border-radius: 14px;
+      padding: 14px 16px;
+    }
+
+    .formula {
+      margin: 0 0 16px;
+      padding: 12px 14px;
+      border-radius: 11px;
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      color: #344054;
+      font-size: .88rem;
+    }
+
+    .formula strong { color: var(--text); }
+    .formula code {
+      display: block;
+      margin-top: 5px;
+      white-space: normal;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      color: var(--primary-dark);
+      font-weight: 700;
+    }
+
+    @media (max-width: 800px) {
+      .grid { grid-template-columns: 1fr; }
+      .full-width { grid-column: auto; }
+      .hero { padding-top: 40px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <div class="hero-inner">
+      <h1>Investor Calculation Toolkit</h1>
+      <p>Enter your own figures to understand investment returns, inflation, compounding and market declines.</p>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="intro-card">
+      <strong>How to use:</strong> Choose a calculator, enter the figures you know, then press <em>Calculate</em>. Percentages should be entered as normal numbers—for example, enter <strong>8</strong> for 8%.
+    </section>
+
+    <section class="grid">
+      <article class="calculator">
+        <div class="calculator-header">
+          <h2>1. Percentage Return</h2>
+          <p>Calculate how much an investment gained or lost.</p>
+        </div>
+        <div class="calculator-body">
+          <div class="formula"><strong>Formula used</strong><code>Percentage return = ((Ending value − Starting value) ÷ Starting value) × 100</code></div>
+          <div class="field"><label for="pr-start">Starting value</label><div class="input-wrap"><span class="prefix">£</span><input id="pr-start" type="number" min="0" step="0.01" placeholder="1000"></div></div>
+          <div class="field"><label for="pr-end">Ending value</label><div class="input-wrap"><span class="prefix">£</span><input id="pr-end" type="number" min="0" step="0.01" placeholder="1120"></div></div>
+          <button onclick="percentageReturn()">Calculate return</button>
+          <div class="error" id="pr-error"></div><div class="result" id="pr-result"></div>
+        </div>
+      </article>
+
+      <article class="calculator">
+        <div class="calculator-header">
+          <h2>2. Real Return</h2>
+          <p>See your return after accounting for inflation.</p>
+        </div>
+        <div class="calculator-body">
+          <div class="formula"><strong>Formula used</strong><code>Real return = ((1 + investment return for the period) ÷ (1 + inflation for the same period) − 1) × 100</code></div>
+          <div class="field"><label for="rr-return">Investment return for the period</label><div class="input-wrap"><input id="rr-return" type="number" step="0.01" placeholder="10"><span class="suffix">%</span></div></div>
+          <div class="field"><label for="rr-inflation">Inflation rate for the same period</label><div class="input-wrap"><input id="rr-inflation" type="number" step="0.01" placeholder="3"><span class="suffix">%</span></div></div>
+          <button onclick="realReturn()">Calculate real return</button>
+          <div class="error" id="rr-error"></div><div class="result" id="rr-result"></div>
+        </div>
+      </article>
+
+      <article class="calculator">
+        <div class="calculator-header">
+          <h2>3. Inflation Erosion</h2>
+          <p>Estimate the future purchasing power of cash.</p>
+        </div>
+        <div class="calculator-body">
+          <div class="formula"><strong>Formulas used</strong><code>Future cash balance = Starting cash × (1 + annual cash interest/return)<sup>years</sup></code><code>Purchasing power in today’s money = Future cash balance ÷ (1 + annual inflation)<sup>years</sup></code></div>
+          <div class="field"><label for="ie-cash">Starting cash amount</label><div class="input-wrap"><span class="prefix">£</span><input id="ie-cash" type="number" min="0" step="0.01" placeholder="3000"></div></div>
+          <div class="field"><label for="ie-cash-return">Annual interest/return on the cash (how much the bank balance grows each year)</label><div class="input-wrap"><input id="ie-cash-return" type="number" step="0.01" placeholder="0"><span class="suffix">%</span></div></div>
+          <div class="field"><label for="ie-inflation">Annual inflation rate (how much average prices rise each year)</label><div class="input-wrap"><input id="ie-inflation" type="number" step="0.01" placeholder="3"><span class="suffix">%</span></div></div>
+          <div class="field"><label for="ie-years">Number of years</label><div class="input-wrap"><input id="ie-years" type="number" min="0" step="1" placeholder="10"><span class="suffix">years</span></div></div>
+          <button onclick="inflationErosion()">Calculate purchasing power</button>
+          <div class="error" id="ie-error"></div><div class="result" id="ie-result"></div>
+        </div>
+      </article>
+
+      <article class="calculator">
+        <div class="calculator-header">
+          <h2>4. Lump-Sum Compound Growth</h2>
+          <p>Project how a one-off investment may grow.</p>
+        </div>
+        <div class="calculator-body">
+          <div class="formula"><strong>Formula used</strong><code>Future value = Starting investment × (1 + expected annual return)<sup>investment period in years</sup></code></div>
+          <div class="field"><label for="cg-start">Starting investment</label><div class="input-wrap"><span class="prefix">£</span><input id="cg-start" type="number" min="0" step="0.01" placeholder="10000"></div></div>
+          <div class="field"><label for="cg-rate">Expected annual return</label><div class="input-wrap"><input id="cg-rate" type="number" step="0.01" placeholder="8"><span class="suffix">%</span></div></div>
+          <div class="field"><label for="cg-years">Investment period</label><div class="input-wrap"><input id="cg-years" type="number" min="0" step="1" placeholder="30"><span class="suffix">years</span></div></div>
+          <button onclick="compoundGrowth()">Calculate future value</button>
+          <div class="error" id="cg-error"></div><div class="result" id="cg-result"></div>
+        </div>
+      </article>
+
+      <article class="calculator">
+        <div class="calculator-header">
+          <h2>5. Monthly Investing</h2>
+          <p>Project the value of regular monthly contributions.</p>
+        </div>
+        <div class="calculator-body">
+          <div class="formula"><strong>Formulas used</strong><code>Monthly return = (1 + expected annual return)<sup>1/12</sup> − 1</code><code>Future value = Initial investment growth + future value of all monthly contributions</code><code>End-of-month contributions: Contribution × (((1 + monthly return)<sup>number of months</sup> − 1) ÷ monthly return)</code><code>Beginning-of-month contributions: End-of-month result × (1 + monthly return)</code></div>
+          <div class="field"><label for="mi-initial">Initial investment</label><div class="input-wrap"><span class="prefix">£</span><input id="mi-initial" type="number" min="0" step="0.01" value="0"></div></div>
+          <div class="field"><label for="mi-monthly">Monthly contribution</label><div class="input-wrap"><span class="prefix">£</span><input id="mi-monthly" type="number" min="0" step="0.01" placeholder="300"></div></div>
+          <div class="field"><label for="mi-rate">Expected annual return (the average percentage you assume the investment grows each year)</label><div class="input-wrap"><input id="mi-rate" type="number" step="0.01" placeholder="8"><span class="suffix">%</span></div></div>
+          <div class="field"><label for="mi-years">Investment period (how long the money stays invested)</label><div class="input-wrap"><input id="mi-years" type="number" min="0" step="1" placeholder="30"><span class="suffix">years</span></div></div>
+          <div class="field"><label for="mi-timing">Contribution timing (whether each monthly payment is invested at the start or end of the month)</label><div class="input-wrap"><select id="mi-timing"><option value="end">End of each month</option><option value="beginning">Beginning of each month</option></select></div></div>
+          <button onclick="monthlyInvesting()">Calculate future value</button>
+          <div class="error" id="mi-error"></div><div class="result" id="mi-result"></div>
+        </div>
+      </article>
+
+      <article class="calculator">
+        <div class="calculator-header">
+          <h2>6. Annualised Return (CAGR)</h2>
+          <p>Find the average compounded return per year.</p>
+        </div>
+        <div class="calculator-body">
+          <div class="formula"><strong>Formula used</strong><code>CAGR = ((Ending value ÷ Starting value)<sup>1 ÷ number of years</sup> − 1) × 100</code></div>
+          <div class="field"><label for="ca-start">Starting value</label><div class="input-wrap"><span class="prefix">£</span><input id="ca-start" type="number" min="0" step="0.01" placeholder="10000"></div></div>
+          <div class="field"><label for="ca-end">Ending value</label><div class="input-wrap"><span class="prefix">£</span><input id="ca-end" type="number" min="0" step="0.01" placeholder="20000"></div></div>
+          <div class="field"><label for="ca-years">Number of years</label><div class="input-wrap"><input id="ca-years" type="number" min="0.01" step="0.01" placeholder="10"><span class="suffix">years</span></div></div>
+          <button onclick="cagr()">Calculate CAGR</button>
+          <div class="error" id="ca-error"></div><div class="result" id="ca-result"></div>
+        </div>
+      </article>
+<article class="calculator">
+        <div class="calculator-header">
+          <h2>7. Loss and Recovery</h2>
+          <p>See how much a portfolio must rise after a fall.</p>
+        </div>
+        <div class="calculator-body">
+          <div class="formula"><strong>Formulas used</strong><code>Value after fall = Original value × (1 − percentage fall)</code><code>Recovery required = ((Original value ÷ value after fall) − 1) × 100</code></div>
+          <div class="field"><label for="lr-value">Portfolio value before fall</label><div class="input-wrap"><span class="prefix">£</span><input id="lr-value" type="number" min="0" step="0.01" placeholder="10000"></div></div>
+          <div class="field"><label for="lr-loss">Percentage fall</label><div class="input-wrap"><input id="lr-loss" type="number" min="0" max="99.99" step="0.01" placeholder="20"><span class="suffix">%</span></div></div>
+          <button onclick="lossRecovery()">Calculate recovery required</button>
+          <div class="error" id="lr-error"></div><div class="result" id="lr-result"></div>
+        </div>
+      </article>
+
+      <article class="calculator">
+        <div class="calculator-header">
+          <h2>8. Portfolio Allocation</h2>
+          <p>Calculate what percentage each holding represents.</p>
+        </div>
+        <div class="calculator-body">
+          <div class="formula"><strong>Formula used</strong><code>Portfolio allocation = (Value of the holding ÷ Total portfolio value) × 100</code></div>
+          <div class="field"><label for="pa-total">Total portfolio value</label><div class="input-wrap"><span class="prefix">£</span><input id="pa-total" type="number" min="0" step="0.01" placeholder="15000"></div></div>
+          <div class="field"><label for="pa-holding">Value of this holding</label><div class="input-wrap"><span class="prefix">£</span><input id="pa-holding" type="number" min="0" step="0.01" placeholder="12000"></div></div>
+          <button onclick="portfolioAllocation()">Calculate allocation</button>
+          <div class="error" id="pa-error"></div><div class="result" id="pa-result"></div>
+        </div>
+      </article>
+    </section>
+  </main>
+
+  <footer>
+    <div class="note"><strong>Educational use only:</strong> These calculators provide mathematical illustrations, not personalised financial advice. Returns and inflation are uncertain, and investments can fall as well as rise.</div>
+  </footer>
+
+  <script>
+    const money = new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP', maximumFractionDigits: 2 });
+    const percent = value => `${value.toFixed(2)}%`;
+    const value = id => Number(document.getElementById(id).value);
+
+    function show(id, main, detail) {
+      const result = document.getElementById(`${id}-result`);
+      const error = document.getElementById(`${id}-error`);
+      error.classList.remove('visible');
+      result.innerHTML = `<div class="main">${main}</div><div class="detail">${detail}</div>`;
+      result.classList.add('visible');
+    }
+
+    function fail(id, message) {
+      document.getElementById(`${id}-result`).classList.remove('visible');
+      const error = document.getElementById(`${id}-error`);
+      error.textContent = message;
+      error.classList.add('visible');
+    }
+
+    function valid(...numbers) { return numbers.every(Number.isFinite); }
+
+    function percentageReturn() {
+      const start = value('pr-start'), end = value('pr-end');
+      if (!valid(start, end) || start <= 0 || end < 0) return fail('pr', 'Enter a starting value above £0 and a valid ending value.');
+      const gain = end - start;
+      const rate = gain / start * 100;
+      show('pr', percent(rate), `Your investment ${gain >= 0 ? 'gained' : 'lost'} ${money.format(Math.abs(gain))}.`);
+    }
+
+    function realReturn() {
+      const nominal = value('rr-return'), inflation = value('rr-inflation');
+      if (!valid(nominal, inflation) || nominal <= -100 || inflation <= -100) return fail('rr', 'Both rates must be greater than -100%.');
+      const real = ((1 + nominal / 100) / (1 + inflation / 100) - 1) * 100;
+      const direction = real > 0 ? 'increases' : real < 0 ? 'decreases' : 'leaves unchanged';
+      show('rr', percent(real), `A ${percent(nominal)} investment return for the period, with ${percent(inflation)} inflation over that same period, ${direction} purchasing power by approximately ${percent(Math.abs(real))}.`);
+    }
+
+    function inflationErosion() {
+      const cash = value('ie-cash'), cashReturn = value('ie-cash-return'), inflation = value('ie-inflation'), years = value('ie-years');
+      if (!valid(cash, cashReturn, inflation, years) || cash < 0 || cashReturn <= -100 || inflation <= -100 || years < 0) return fail('ie', 'Enter valid values. Annual cash return and inflation must each be greater than -100%.');
+      const futureCash = cash * Math.pow(1 + cashReturn / 100, years);
+      const purchasingPower = futureCash / Math.pow(1 + inflation / 100, years);
+      const realChange = purchasingPower - cash;
+      const direction = realChange > 0 ? 'an increase' : realChange < 0 ? 'a decrease' : 'no change';
+      show('ie', money.format(purchasingPower), `After ${years} years, the cash balance would be ${money.format(futureCash)}. After adjusting for inflation, that would have the same buying power as approximately ${money.format(purchasingPower)} today—${direction} in purchasing power of ${money.format(Math.abs(realChange))}.`);
+    }
+
+    function compoundGrowth() {
+      const start = value('cg-start'), rate = value('cg-rate'), years = value('cg-years');
+      if (!valid(start, rate, years) || start < 0 || rate <= -100 || years < 0) return fail('cg', 'Enter valid values. Return must be greater than -100%.');
+      const future = start * Math.pow(1 + rate / 100, years);
+      show('cg', money.format(future), `Estimated growth: ${money.format(future - start)} over ${years} years, assuming a constant ${percent(rate)} annual return.`);
+    }
+
+    function futureWithMonthly(initial, monthly, annualRate, years, beginning = false) {
+      const months = Math.round(years * 12);
+      const monthlyRate = Math.pow(1 + annualRate / 100, 1 / 12) - 1;
+      const initialFV = initial * Math.pow(1 + monthlyRate, months);
+      let contributionsFV;
+      if (Math.abs(monthlyRate) < 1e-12) contributionsFV = monthly * months;
+      else contributionsFV = monthly * ((Math.pow(1 + monthlyRate, months) - 1) / monthlyRate) * (beginning ? 1 + monthlyRate : 1);
+      return initialFV + contributionsFV;
+    }
+
+    function monthlyInvesting() {
+      const initial = value('mi-initial'), monthly = value('mi-monthly'), rate = value('mi-rate'), years = value('mi-years');
+      const beginning = document.getElementById('mi-timing').value === 'beginning';
+      if (!valid(initial, monthly, rate, years) || initial < 0 || monthly < 0 || rate <= -100 || years < 0) return fail('mi', 'Enter valid non-negative amounts. Return must be greater than -100%.');
+      const future = futureWithMonthly(initial, monthly, rate, years, beginning);
+      const contributed = initial + monthly * Math.round(years * 12);
+      show('mi', money.format(future), `You contribute ${money.format(contributed)}. Estimated investment growth is ${money.format(future - contributed)}.`);
+    }
+
+    function cagr() {
+      const start = value('ca-start'), end = value('ca-end'), years = value('ca-years');
+      if (!valid(start, end, years) || start <= 0 || end < 0 || years <= 0) return fail('ca', 'Starting value and years must be above zero.');
+      const rate = (Math.pow(end / start, 1 / years) - 1) * 100;
+      show('ca', percent(rate), `The investment grew from ${money.format(start)} to ${money.format(end)} over ${years} years.`);
+    }
+
+    function lossRecovery() {
+      const portfolio = value('lr-value'), loss = value('lr-loss');
+      if (!valid(portfolio, loss) || portfolio < 0 || loss < 0 || loss >= 100) return fail('lr', 'Enter a valid portfolio value and a loss between 0% and 99.99%.');
+      const after = portfolio * (1 - loss / 100);
+      const recovery = (portfolio / after - 1) * 100;
+      show('lr', `${percent(recovery)} recovery required`, `After a ${percent(loss)} fall, ${money.format(portfolio)} becomes ${money.format(after)}. It must then rise by ${percent(recovery)} to return to the original value.`);
+    }
+
+    function portfolioAllocation() {
+      const total = value('pa-total'), holding = value('pa-holding');
+      if (!valid(total, holding) || total <= 0 || holding < 0) return fail('pa', 'Enter a total portfolio value above £0 and a valid holding value.');
+      const allocation = holding / total * 100;
+      show('pa', percent(allocation), `${money.format(holding)} represents ${percent(allocation)} of a ${money.format(total)} portfolio.`);
+    }
+  </script>
+</body>
+</html>
